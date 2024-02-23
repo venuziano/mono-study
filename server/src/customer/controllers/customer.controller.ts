@@ -18,4 +18,17 @@ export class CustomerController {
       throw new BadRequestException('somenthin went wrong');
     }
   }
+
+  @Get('get/by/id')
+  async getCustomerByID() {
+    try {
+      const customers = await this.customerService.getCustomerByID('cus_PbffhIxxQLHbrJ');
+
+      // console.log(amount, depositCode);
+      return { customers };
+    } catch (error) {
+      console.log('error', error);
+      throw new BadRequestException('somenthin went wrong');
+    }
+  }
 }

@@ -4,8 +4,9 @@ import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { DepositModule } from './deposit/deposit.module';
 import { CustomerModule } from './customer/customer.module';
-import { StripeModule } from './stripe/stripe.module';
+import { StripeModule } from './config/stripe/stripe.module';
 import { AppEnvConfigService } from './config/environment-variables/app-env.config';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AppEnvConfigService } from './config/environment-variables/app-env.conf
     // Application Modules
     CustomerModule,
     DepositModule,
+    PaymentModule,
 
     // Config modules
     DatabaseModule,
@@ -27,6 +29,7 @@ import { AppEnvConfigService } from './config/environment-variables/app-env.conf
       }),
       inject: [AppEnvConfigService],
     }),
+    PaymentModule,
   ],
 })
 export class AppModule {}
