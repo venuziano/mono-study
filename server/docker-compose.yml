@@ -13,9 +13,9 @@ services:
       TYPE: ${TYPE}
       HOST: ${HOST}
       DB_PORT: ${DB_PORT}
-      USERNAME: ${USERNAME}
-      DATABASE: ${DATABASE}
-      PASSWORD: ${PASSWORD}
+      USERNAME: ${MYSQL_USER}
+      DATABASE: ${MYSQL_DATABASE}
+      PASSWORD: ${MYSQL_PASSWORD}
       STRIPE_KEY: ${STRIPE_KEY}
     command: npm run start:dev  # Ensure this script uses a watcher (e.g., nodemon)
 
