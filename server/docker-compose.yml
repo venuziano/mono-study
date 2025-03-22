@@ -1,0 +1,36 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3010:3010"  # Adjust as needed
+    volumes:
+      - .:/src             # Bind mount the current directory into /src in the container
+      - app-data:/src/node_modules  # Use an anonymous volume to prevent overwriting container node_modules
+    depends_on:
+      - db
+    environment:
+      API_PORT: ${API_PORT}
+      TYPE: ${TYPE}
+      HOST: ${HOST}
+      DB_PORT: ${DB_PORT}
+      USERNAME: ${USERNAME}
+      DATABASE: ${DATABASE}
+      PASSWORD: ${PASSWORD}
+      STRIPE_KEY: ${STRIPE_KEY}
+    command: npm run start:dev  # Ensure this script uses a watcher (e.g., nodemon)
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+
+volumes:
+  db-data:
+  app-data:

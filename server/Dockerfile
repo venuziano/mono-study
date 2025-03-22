@@ -4,7 +4,7 @@ WORKDIR /src
 
 COPY package*.json .
 
-RUN npm i --silent
+RUN npm i
 
 COPY . .
 
