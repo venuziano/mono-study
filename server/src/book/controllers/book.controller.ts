@@ -6,7 +6,7 @@ import {
 } from '@nestjs/swagger';
 
 import { DepositDTO } from '../../dto/deposit/deposit.dto';
-import { DepositService } from '../services/deposit.service';
+import { DepositService } from '../services/book.service';
 
 @Controller()
 export class DepositController {
