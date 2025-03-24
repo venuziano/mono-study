@@ -7,6 +7,7 @@ import { CustomerModule } from './customer/customer.module';
 import { StripeModule } from './config/stripe/stripe.module';
 import { AppEnvConfigService } from './config/environment-variables/app-env.config';
 import { PaymentModule } from './payment/payment.module';
+import { BookModule } from './book/book.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PaymentModule } from './payment/payment.module';
     CustomerModule,
     DepositModule,
     PaymentModule,
+    BookModule,
 
     // Config modules
     DatabaseModule,

@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Post } from '@nestjs/common';
+import { BadRequestException, Controller, Post } from '@nestjs/common';
 
 import { PaymentService } from '../services/payment.service';
 

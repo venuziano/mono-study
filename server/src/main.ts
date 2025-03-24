@@ -20,8 +20,9 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('YourTagName')
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('swagger', app, document);
 
   // Listen on the port specified by the configuration service
   await app.listen(port);
