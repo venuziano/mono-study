@@ -25,5 +25,6 @@ export function PaginatedResponseDto<TItem>(itemDto: Type<TItem>): Type<any> {
     // @ApiProperty({ description: 'Indicates if there is a previous page' })
     // hasPreviousPage: boolean;
   }
+
   return PaginatedResponseClass;
 }

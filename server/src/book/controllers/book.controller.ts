@@ -12,13 +12,15 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 
-import { PaginatedResponse } from 'src/types/pagination';
-import { PaginatedResponseDto } from 'src/dto/pagination/pagination.dto';
 import { getAllBooksDTO } from 'src/dto/book/get.all.book.dto';
+import { PaginatedResponseDto } from 'src/dto/pagination/pagination.dto';
+import { GetAllBooksPaginatedResponse } from 'src/types/pagination.types';
+import { paginationLimit } from 'src/utils/pagination.util';
+import { BookService } from '../services/book.service';
 
 @Controller()
 export class BookController {
-  // constructor(private readonly depositService: DepositService) {}
+  constructor(private readonly bookService: BookService) {}
 
   @Get('book/get/all')
   @ApiOperation({ summary: 'Get all books' })
@@ -29,22 +31,15 @@ export class BookController {
     type: String,
   })
   @ApiQuery({
-    name: 'skip',
-    required: false,
-    description: 'Number of items to skip',
-    type: Number,
-    schema: { default: 0 },
-  })
-  @ApiQuery({
     name: 'limit',
-    required: false,
+    required: true,
     description: 'Max number of items to retrieve',
     type: Number,
     schema: { default: 10 },
   })
   @ApiQuery({
     name: 'page',
-    required: false,
+    required: true,
     description: 'Current page number',
     type: Number,
     schema: { default: 1 },
@@ -57,21 +52,11 @@ export class BookController {
   @ApiBadRequestResponse({ description: 'Something went wrong' })
   async getAll(
     @Query('filter') filter?: string,
-    @Query('skip', ParseIntPipe) skip: number = 0,
-    @Query('limit', ParseIntPipe) limit: number = 10,
+    @Query('limit', ParseIntPipe) limit: number = paginationLimit,
     @Query('page', ParseIntPipe) page: number = 1,
-  ): Promise<PaginatedResponse<getAllBooksDTO>> {
+  ): Promise<GetAllBooksPaginatedResponse> {
     try {
-      console.log('filter', filter);
-      console.log('skip', skip);
-      console.log('limit', limit);
-      console.log('page', page);
-      // await this.depositService.syncDeposit(deposit);
-
-      // const { amount, depositCode } = deposit;
-      // console.log(amount, depositCode);
-      // return { amount, depositCode };
-      return {} as PaginatedResponse<getAllBooksDTO>;
+      return await this.bookService.getAllBooks(limit, page, filter);
     } catch (error) {
       console.log('error', error);
       throw new BadRequestException('somenthin went wrong');

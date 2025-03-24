@@ -35,7 +35,7 @@ export class AppEnvConfigService {
   }
 
   get dbSynchronize(): boolean {
-    return this.configService.get<boolean>('DB_SYNCHRONIZE', false);
+    return this.configService.get<boolean>('DB_SYNCHRONIZE', true);
   }
 
   get stripeAPIKey(): string {
