@@ -12,7 +12,7 @@ export class Category {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index()
+  // @Index()
   // @Index('ft_idx_category_name', { fulltext: true })
   @Column({
     name: 'name',

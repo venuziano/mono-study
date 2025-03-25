@@ -10,8 +10,10 @@ import Joi from 'joi';
       validationSchema: Joi.object({
         API_PORT: Joi.number().required(),
         TYPE: Joi.string().required(),
+        PG_TYPE: Joi.string().required(),
         HOST: Joi.string().required(),
         DB_PORT: Joi.number().required(),
+        PG_PORT: Joi.number().required(),
         USERNAME: Joi.string().required(),
         PASSWORD: Joi.string().required(),
         DATABASE: Joi.string().required(),

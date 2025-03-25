@@ -62,4 +62,45 @@ export class BookController {
       throw new BadRequestException('somenthin went wrong');
     }
   }
+
+  @Get('book/get/all2')
+  @ApiOperation({ summary: 'Get all books' })
+  @ApiQuery({
+    name: 'filter',
+    required: false,
+    description: 'Optional filter string',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: true,
+    description: 'Max number of items to retrieve',
+    type: Number,
+    schema: { default: 10 },
+  })
+  @ApiQuery({
+    name: 'page',
+    required: true,
+    description: 'Current page number',
+    type: Number,
+    schema: { default: 1 },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List retrieved successfully!',
+    type: PaginatedResponseDto(getAllBooksDTO),
+  })
+  @ApiBadRequestResponse({ description: 'Something went wrong' })
+  async getAll2(
+    @Query('filter') filter?: string,
+    @Query('limit', ParseIntPipe) limit: number = paginationLimit,
+    @Query('page', ParseIntPipe) page: number = 1,
+  ): Promise<GetAllBooksPaginatedResponse> {
+    try {
+      return await this.bookService.getAllBooks2(limit, page, filter);
+    } catch (error) {
+      console.log('error', error);
+      throw new BadRequestException('somenthin went wrong');
+    }
+  }
 }

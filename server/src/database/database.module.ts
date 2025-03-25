@@ -10,9 +10,11 @@ import { AppEnvConfigService } from 'src/config/environment-variables/app-env.co
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule], // Import the module that provides AppConfigService
       useFactory: (config: AppEnvConfigService) => ({
-        type: 'mysql',
+        // type: 'mysql',
+        // port: config.dbPort,
+        type: 'postgres',
+        port: config.pgDBPort,
         host: config.dbHost,
-        port: config.dbPort,
         username: config.dbUsername,
         password: config.dbPassword,
         database: config.dbName,
@@ -24,3 +26,9 @@ import { AppEnvConfigService } from 'src/config/environment-variables/app-env.co
   ],
 })
 export class DatabaseModule {}
+
+// searching by 'nam': regular pg = 360 ms
+// searching by '9': regular pg = 1.6 seconds
+
+// searching by 'nam': regular mysql = 560 ms
+// searching by '9': regular mysql = 750 ms

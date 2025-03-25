@@ -11,6 +11,8 @@ services:
     environment:
       API_PORT: ${API_PORT}
       TYPE: ${TYPE}
+      PG_TYPE: ${PG_TYPE}
+      PG_PORT: ${PG_PORT}
       HOST: ${HOST}
       DB_PORT: ${DB_PORT}
       USERNAME: ${MYSQL_USER}
@@ -31,6 +33,19 @@ services:
     volumes:
       - db-data:/var/lib/mysql
 
+  postgres:
+    image: postgres:13-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${MYSQL_USER}
+      POSTGRES_PASSWORD: ${MYSQL_PASSWORD}
+      POSTGRES_DB: ${MYSQL_DATABASE}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
 volumes:
   db-data:
   app-data:
+  pgdata:

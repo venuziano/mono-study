@@ -12,7 +12,7 @@ export class Book {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index()
+  // @Index()
   // @Index('ft_idx_book_name', { fulltext: true })
   @Column({ name: 'name', length: 255 })
   name: string;

@@ -14,12 +14,20 @@ export class AppEnvConfigService {
     return this.configService.get<string>('TYPE', 'mysql');
   }
 
+  get pgDBType(): string {
+    return this.configService.get<string>('PG_TYPE', 'postgres');
+  }
+
   get dbHost(): string {
     return this.configService.get<string>('HOST', 'host.docker.internal');
   }
 
   get dbPort(): number {
     return this.configService.get<number>('DB_PORT', 3306);
+  }
+
+  get pgDBPort(): number {
+    return this.configService.get<number>('PG_PORT', 5432);
   }
 
   get dbUsername(): string {
