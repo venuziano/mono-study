@@ -41,33 +41,19 @@ export class BookService {
       .createQueryBuilder('book')
       .leftJoinAndSelect('book.bookCategories', 'bookCategory')
       .leftJoinAndSelect('bookCategory.category', 'category');
+
     // Apply filtering on the book name if provided
     if (filter) {
-      // const fullTextFilter = `${filter}*`;
-      // query.where(
-      //   'MATCH(book.name) AGAINST(:filter IN BOOLEAN MODE) OR EXISTS (SELECT 1 FROM book_categories bc JOIN category c ON bc.category_id = c.id WHERE bc.book_id = book.id AND MATCH(c.name) AGAINST(:filter IN BOOLEAN MODE))',
-      //   { filter: fullTextFilter },
-      // );
-      // query.where('book.name LIKE :filter', { filter: `${filter}%` }).orWhere(
-      //   new Brackets((qb) => {
-      //     qb.where(
-      //       'EXISTS (SELECT 1 FROM book_categories bc JOIN category c ON bc.category_id = c.id WHERE bc.book_id = book.id AND c.name LIKE :filter)',
-      //       { filter: `%${filter}%` },
-      //     );
-      //   }),
-      // );
-      // query.where(
-      //   "to_tsvector('english', book.name) @@ plainto_tsquery('english', :filter) OR EXISTS (" +
-      //     'SELECT 1 FROM book_categories bc JOIN category c ON bc.category_id = c.id ' +
-      //     "WHERE bc.book_id = book.id AND to_tsvector('english', c.name) @@ plainto_tsquery('english', :filter)" +
-      //     ')',
-      //   { filter },
-      // );
       query2.where(
-        'book.name ILIKE :filter OR EXISTS (SELECT 1 FROM book_categories bc JOIN category c ON bc.category_id = c.id WHERE bc.book_id = book.id AND c.name ILIKE :filter)',
+        'book.name ILIKE :filter OR category.name ILIKE :filter',
         // 'book.name LIKE :filter OR EXISTS (SELECT 1 FROM book_categories bc JOIN category c ON bc.category_id = c.id WHERE bc.book_id = book.id AND c.name LIKE :filter)',
         { filter: `%${filter}%` },
       );
+      // query2.where(
+      //   'book.name ILIKE :filter OR EXISTS (SELECT 1 FROM book_categories bc JOIN category c ON bc.category_id = c.id WHERE bc.book_id = book.id AND c.name ILIKE :filter)',
+      //   // 'book.name LIKE :filter OR EXISTS (SELECT 1 FROM book_categories bc JOIN category c ON bc.category_id = c.id WHERE bc.book_id = book.id AND c.name LIKE :filter)',
+      //   { filter: `%${filter}%` },
+      // );
 
       query.where(
         `to_tsvector('english', book.name) @@ to_tsquery('english', :tsquery)
@@ -80,13 +66,61 @@ export class BookService {
          )`,
         { tsquery },
       );
+
+      // query.where(
+      //   `to_tsvector('english', book.name) @@ to_tsquery('english', :tsquery)
+      //    OR to_tsvector('english', category.name) @@ to_tsquery('english', :tsquery)`,
+      //   { tsquery },
+      // );
     }
 
     // Apply pagination
-    // query2.skip(offset).take(limit);
     query.skip(offset).take(limit);
-    console.log('query', query.getSql());
-    const books = await query.getMany();
+    // console.log('query', query.getSql());
+    // const books = await query.getMany();
+    // const rawCountQuery = `
+    //   SELECT COUNT(DISTINCT b.id) AS count
+    //   FROM book b
+    //   LEFT JOIN book_categories bc ON bc.book_id = b.id
+    //   LEFT JOIN category c ON c.id = bc.category_id
+    //   WHERE to_tsvector('english', b.name) @@ to_tsquery('english', $1)
+    //     OR to_tsvector('english', c.name) @@ to_tsquery('english', $1);
+    // `;
+
+    const unionSubQuery = `
+  SELECT b.id, b.name
+  FROM book b
+  WHERE to_tsvector('english', b.name) @@ to_tsquery('english', :tsquery)
+  UNION
+  SELECT b.id, b.name
+  FROM book b
+  WHERE EXISTS (
+    SELECT 1
+    FROM book_categories bc
+    JOIN category c ON c.id = bc.category_id
+    WHERE bc.book_id = b.id
+      AND to_tsvector('english', c.name) @@ to_tsquery('english', :tsquery)
+  )
+`;
+
+    const query3 = this.bookRepository
+      .createQueryBuilder() // use your global dataSource instead of repository
+      .select('b.id', 'book_id')
+      .addSelect('b.name', 'book_name')
+      .addSelect(
+        `(SELECT jsonb_agg(to_jsonb(c.*))
+       FROM book_categories bc
+       JOIN category c ON c.id = bc.category_id
+       WHERE bc.book_id = b.id)`,
+        'categories',
+      )
+      .from(`(${unionSubQuery})`, 'b')
+      .setParameter('tsquery', tsquery)
+      .skip(offset)
+      .take(limit);
+
+    const books2 = await query3.getRawMany();
+
     const rawCountQuery = `
       SELECT COUNT(*) AS count
       FROM (
@@ -108,14 +142,22 @@ export class BookService {
     ]);
     const total = parseInt(resultRawCountQuery[0].count, 10);
     //   console.log('total', total);
+    // query2.skip(offset).take(limit);
     // const [books, total] = await query2.getManyAndCount();
 
     // Map the raw Book entities to your DTOs
-    const data = books.map((book) => new getAllBooksDTO(book));
+    // const data = books.map((book) => new getAllBooksDTO(book));
+    const data = books2;
 
     // Calculate total pages
     const totalPages = Math.ceil(total / limit);
 
+    // category 9s
+    // romance 2s
+
+    // new
+    // category 580ms
+    // romance 3.4s
     return {
       data,
       total,
