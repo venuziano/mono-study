@@ -44,6 +44,19 @@ export class BookController {
     type: Number,
     schema: { default: 1 },
   })
+  @ApiQuery({
+    name: 'sort',
+    required: false,
+    description:
+      'Sort field (e.g., name, author, publisher, created_at, updated_at)',
+    type: String,
+  })
+  @ApiQuery({
+    name: 'order',
+    required: false,
+    description: 'Sort order, either ASC or DESC',
+    type: String,
+  })
   @ApiResponse({
     status: 200,
     description: 'List retrieved successfully!',
@@ -54,9 +67,17 @@ export class BookController {
     @Query('filter') filter?: string,
     @Query('limit', ParseIntPipe) limit: number = paginationLimit,
     @Query('page', ParseIntPipe) page: number = 1,
+    @Query('sort') sort?: string,
+    @Query('order') order?: string,
   ): Promise<GetAllBooksPaginatedResponse> {
     try {
-      return await this.bookService.getAllBooks(limit, page, filter);
+      return await this.bookService.getAllBooks(
+        limit,
+        page,
+        filter,
+        sort,
+        order,
+      );
     } catch (error) {
       console.log('error', error);
       throw new BadRequestException('somenthin went wrong');

@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BookCategory } from 'src/entity/book-categories.entity';
 import { Book } from 'src/entity/book.entity';
 import { GetBookCategoryDTO } from '../book.categories/book.categories.dto';
 
@@ -12,6 +11,27 @@ export class getAllBooksDTO {
 
   @ApiProperty({ description: 'name description', example: 'book name 1' })
   name: string;
+
+  @ApiProperty({ description: `book's author`, example: 'author name 1' })
+  author: string;
+
+  @ApiProperty({ description: `book's publisher`, example: 'publisher name 1' })
+  publisher: string;
+
+  @ApiProperty({
+    description: `book's publication date`,
+    example: 'publication date example',
+  })
+  publication_date: Date;
+
+  @ApiProperty({ description: `book's page count`, example: '500' })
+  page_count: number;
+
+  @ApiProperty({ description: 'created at', example: '2025-04-01' })
+  created_at: Date;
+
+  @ApiProperty({ description: 'updated at', example: '2025-07-01' })
+  updated_at: Date;
 
   @ApiProperty({
     description: 'categories description',
@@ -36,11 +56,20 @@ export class getAllBooksDTO {
   constructor(book: Book) {
     this.id = book.id;
     this.name = book.name;
-    this.categories = book.bookCategories.map((bookCategory: BookCategory) => ({
-      category: {
-        id: bookCategory.category.id,
-        name: bookCategory.category.name,
-      },
-    }));
+    this.author = book.author;
+    this.publisher = book.publisher;
+    this.publication_date = book.publication_date;
+    this.page_count = book.page_count;
+    this.created_at = book.created_at;
+    this.updated_at = book.updated_at;
+
+    this.categories = book.bookCategories.map(
+      (bookCategory: GetBookCategoryDTO) => ({
+        category: {
+          id: bookCategory.category.id,
+          name: bookCategory.category.name,
+        },
+      }),
+    );
   }
 }

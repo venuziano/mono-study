@@ -5,7 +5,7 @@ services:
       - "3010:3010"  # Adjust as needed
     volumes:
       - .:/src             # Bind mount the current directory into /src in the container
-      - app-data:/src/node_modules  # Use an anonymous volume to prevent overwriting container node_modules
+      - app-data:/src/node_modules  # Use a volume to prevent overwriting container node_modules
     depends_on:
       - db
     environment:

@@ -19,17 +19,12 @@ import { AppEnvConfigService } from 'src/config/environment-variables/app-env.co
         password: config.dbPassword,
         database: config.dbName,
         autoLoadEntities: true,
-        synchronize: config.dbSynchronize,
-        logging: true,
+        // synchronize: config.dbSynchronize,
+        synchronize: false,
+        // logging: true,
       }),
       inject: [AppEnvConfigService], // Inject AppConfigService
     }),
   ],
 })
 export class DatabaseModule {}
-
-// searching by 'nam': regular pg = 360 ms
-// searching by '9': regular pg = 1.6 seconds
-
-// searching by 'nam': regular mysql = 560 ms
-// searching by '9': regular mysql = 750 ms

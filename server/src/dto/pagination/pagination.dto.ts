@@ -19,11 +19,11 @@ export function PaginatedResponseDto<TItem>(itemDto: Type<TItem>): Type<any> {
     @ApiProperty({ description: 'Total pages available' })
     totalPages: number;
 
-    // @ApiProperty({ description: 'Indicates if there is a next page' })
-    // hasNextPage: boolean;
+    @ApiProperty({ description: 'Indicates if there is a next page' })
+    hasNextPage: boolean;
 
-    // @ApiProperty({ description: 'Indicates if there is a previous page' })
-    // hasPreviousPage: boolean;
+    @ApiProperty({ description: 'Indicates if there is a previous page' })
+    hasPreviousPage: boolean;
   }
 
   return PaginatedResponseClass;
