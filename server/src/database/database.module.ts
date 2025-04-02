@@ -10,8 +10,6 @@ import { AppEnvConfigService } from 'src/config/environment-variables/app-env.co
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule], // Import the module that provides AppConfigService
       useFactory: (config: AppEnvConfigService) => ({
-        // type: 'mysql',
-        // port: config.dbPort,
         type: 'postgres',
         port: config.pgDBPort,
         host: config.dbHost,
