@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Book } from 'src/entity/book.entity';
 import { getAllBooksDTO } from 'src/dto/book/get.all.book.dto';
 import { GetAllBooksPaginatedResponse } from 'src/types/pagination.types';
+import { tsquery } from 'src/utils/filter.util';
 
 @Injectable()
 export class BookService {
@@ -29,10 +30,6 @@ export class BookService {
     sort?: string,
     order?: string,
   ): Promise<GetAllBooksPaginatedResponse> {
-    // Calculate the offset using the page number and limit
-    const offset = (page - 1) * limit;
-    const tsquery = filter.trim().split(/\s+/).join(' & ');
-
     const allowedSortFields = [
       'name',
       'author',
@@ -43,58 +40,33 @@ export class BookService {
       'updated_at',
     ];
 
+    const allowedSortOrders = ['ASC', 'DESC'];
+
     const sortField: string =
       sort && allowedSortFields.includes(sort) ? sort : 'updated_at';
 
     const sortOrder: 'ASC' | 'DESC' =
       order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
 
-    // Apply filtering on the book name if provided
-    if (filter) {
+    // Prevent SQL injection
+    if (!allowedSortFields.includes(sortField)) {
+      throw new Error('Invalid sort field');
     }
 
-    // const unionSubQuery = `
-    //   SELECT *
-    //   FROM book b
-    //   WHERE to_tsvector('english', coalesce(b.name, '') || ' ' || coalesce(b.author, '') || ' ' || coalesce(b.publisher, ''))
-    //         @@ to_tsquery('english', :tsquery)
-    //   UNION
-    //   SELECT *
-    //   FROM book b
-    //   WHERE EXISTS (
-    //     SELECT 1
-    //     FROM book_categories bc
-    //     JOIN category c ON c.id = bc.category_id
-    //     WHERE bc.book_id = b.id
-    //       AND to_tsvector('english', c.name) @@ to_tsquery('english', :tsquery)
-    //   )
-    // `;
+    if (!allowedSortOrders.includes(sortOrder.toUpperCase())) {
+      throw new Error('Invalid sort order');
+    }
 
-    // const query3 = this.bookRepository
-    //   .createQueryBuilder()
-    //   // .select('DISTINCT *')
-    //   .select(
-    //     'b.id, b.name, b.author, b.publisher, b.publication_date, b.page_count, b.created_at, b.updated_at',
-    //   )
-    //   .addSelect(
-    //     `(SELECT jsonb_agg(jsonb_build_object('category', to_jsonb(c.*)))
-    //       FROM book_categories bc
-    //       JOIN category c ON c.id = bc.category_id
-    //       WHERE bc.book_id = b.id)`,
-    //     'bookCategories',
-    //   )
-    //   .from(`(${unionSubQuery})`, 'b')
-    //   .setParameter('tsquery', tsquery)
-    //   .groupBy(
-    //     'b.id, b.name, b.author, b.publisher, b.publication_date, b.page_count, b.created_at, b.updated_at',
-    //   )
-    //   .orderBy(`b.${sortField}`, sortOrder)
-    //   .skip(offset)
-    //   .take(limit);
+    const sanitizedLimit: number = Number(limit);
+    const offset: number = (page - 1) * sanitizedLimit;
 
-    // // const books2 = await query3.getRawMany();
+    // Prevent SQL injection
+    const offsetVal: number = Number(offset);
+    if (isNaN(sanitizedLimit) || isNaN(offsetVal)) {
+      throw new Error('Invalid pagination values');
+    }
 
-    const rawQuery = `
+    const rawQueryUsingFilter: string = `
     SELECT
       *,
       (
@@ -121,13 +93,29 @@ export class BookService {
           AND to_tsvector('english', c.name) @@ to_tsquery('english', $1)
       )
     ) b
-    ORDER BY b.${sortField} ${sortOrder};
+    ORDER BY b.${sortField} ${sortOrder}
+    LIMIT ${sanitizedLimit} OFFSET ${offset};
   `;
 
-    const resulttest = await this.bookRepository.query(rawQuery, [tsquery]);
-    // console.log('resulttest', resulttest);
+    const rawQueryWithoutFilter: string = `
+      SELECT
+      b.*,
+      (
+        SELECT jsonb_agg(jsonb_build_object('category', to_jsonb(c.*)))
+        FROM book_categories bc
+        JOIN category c ON c.id = bc.category_id
+        WHERE bc.book_id = b.id
+      ) AS "bookCategories"
+    FROM book b
+    ORDER BY b.updated_at ASC
+    LIMIT ${sanitizedLimit} OFFSET ${offset}`;
 
-    const rawCountQuery = `
+    const resultBooks: Book[] = await this.bookRepository.query(
+      filter !== '' ? rawQueryUsingFilter : rawQueryWithoutFilter,
+      filter !== '' ? [tsquery(filter)] : [],
+    );
+
+    const rawCountQueryUsingFilter: string = `
       SELECT COUNT(*) AS count
       FROM (
         SELECT id
@@ -144,15 +132,25 @@ export class BookService {
         WHERE to_tsvector('english', c.name) @@ to_tsquery('english', $1)
       ) AS matching_books;
     `;
-    const resultRawCountQuery = await this.bookRepository.query(rawCountQuery, [
-      tsquery,
-    ]);
+
+    const rawCountQueryWithoutFilter: string = `
+      SELECT COUNT(*) AS count
+      FROM (
+        SELECT b.id
+        FROM book b
+      ) AS matching_books;`;
+
+    const resultRawCountQuery = await this.bookRepository.query(
+      filter !== '' ? rawCountQueryUsingFilter : rawCountQueryWithoutFilter,
+      filter !== '' ? [tsquery(filter)] : [],
+    );
+
     const total: number = parseInt(resultRawCountQuery[0].count, 10);
-    // const data = books2.map((book: Book) => new getAllBooksDTO(book));
-    const data = resulttest.map((book: Book) => new getAllBooksDTO(book));
-    // const data = books2;
-    // console.log('books2', books2);
-    // Calculate total pages
+
+    const data: getAllBooksDTO[] = resultBooks.map(
+      (book: Book) => new getAllBooksDTO(book),
+    );
+
     const totalPages: number = Math.ceil(total / limit);
 
     // category 9s 7 records

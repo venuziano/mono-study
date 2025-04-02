@@ -21,7 +21,7 @@ import { AppEnvConfigService } from 'src/config/environment-variables/app-env.co
         autoLoadEntities: true,
         // synchronize: config.dbSynchronize,
         synchronize: false,
-        // logging: true,
+        logging: true,
       }),
       inject: [AppEnvConfigService], // Inject AppConfigService
     }),

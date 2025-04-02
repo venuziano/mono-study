@@ -63,13 +63,13 @@ export class getAllBooksDTO {
     this.created_at = book.created_at;
     this.updated_at = book.updated_at;
 
-    this.categories = book.bookCategories.map(
-      (bookCategory: GetBookCategoryDTO) => ({
-        category: {
-          id: bookCategory.category.id,
-          name: bookCategory.category.name,
-        },
-      }),
-    );
+    // this.categories = book.bookCategories.map(
+    //   (bookCategory: GetBookCategoryDTO) => ({
+    //     category: {
+    //       id: bookCategory.category.id,
+    //       name: bookCategory.category.name,
+    //     },
+    //   }),
+    // );
   }
 }
