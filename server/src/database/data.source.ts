@@ -11,7 +11,7 @@ dotenv.config();
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: 'localhost',
+  host: 'postgres',
   // host: process.env.HOST,
   port: Number(process.env.PG_PORT),
   username: process.env.MYSQL_USER,

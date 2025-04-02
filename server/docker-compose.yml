@@ -19,7 +19,7 @@ services:
       DATABASE: ${MYSQL_DATABASE}
       PASSWORD: ${MYSQL_PASSWORD}
       STRIPE_KEY: ${STRIPE_KEY}
-    command: npm run start:dev  # Ensure this script uses a watcher (e.g., nodemon)
+      entrypoint: "/usr/local/bin/entrypoint.sh"
 
   db:
     image: mysql:8.0
