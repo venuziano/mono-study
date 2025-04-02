@@ -40,22 +40,21 @@ export class BookService {
       'updated_at',
     ];
 
+    // Prevent SQL injection
+    if (sort && !allowedSortFields.includes(sort)) {
+      throw new Error('Invalid sort field');
+    }
+
     const allowedSortOrders: string[] = ['ASC', 'DESC'];
+    if (order && !allowedSortOrders.includes(order.toUpperCase())) {
+      throw new Error('Invalid sort order');
+    }
 
     const sortField: string =
       sort && allowedSortFields.includes(sort) ? sort : 'updated_at';
 
     const sortOrder: 'ASC' | 'DESC' =
       order?.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
-
-    // Prevent SQL injection
-    if (!allowedSortFields.includes(sortField)) {
-      throw new Error('Invalid sort field');
-    }
-
-    if (!allowedSortOrders.includes(sortOrder.toUpperCase())) {
-      throw new Error('Invalid sort order');
-    }
 
     const offset: number = (page - 1) * limit;
 
