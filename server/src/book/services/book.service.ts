@@ -30,7 +30,7 @@ export class BookService {
     sort?: string,
     order?: string,
   ): Promise<GetAllBooksPaginatedResponse> {
-    const allowedSortFields = [
+    const allowedSortFields: string[] = [
       'name',
       'author',
       'publisher',
@@ -40,7 +40,7 @@ export class BookService {
       'updated_at',
     ];
 
-    const allowedSortOrders = ['ASC', 'DESC'];
+    const allowedSortOrders: string[] = ['ASC', 'DESC'];
 
     const sortField: string =
       sort && allowedSortFields.includes(sort) ? sort : 'updated_at';
@@ -57,14 +57,7 @@ export class BookService {
       throw new Error('Invalid sort order');
     }
 
-    const sanitizedLimit: number = Number(limit);
-    const offset: number = (page - 1) * sanitizedLimit;
-
-    // Prevent SQL injection
-    const offsetVal: number = Number(offset);
-    if (isNaN(sanitizedLimit) || isNaN(offsetVal)) {
-      throw new Error('Invalid pagination values');
-    }
+    const offset: number = (page - 1) * limit;
 
     const rawQueryUsingFilter: string = `
     SELECT
@@ -83,7 +76,7 @@ export class BookService {
             @@ to_tsquery('english', $1)
       UNION
       SELECT
-        *
+        *                
       FROM book b
       WHERE EXISTS (
         SELECT 1
@@ -94,7 +87,7 @@ export class BookService {
       )
     ) b
     ORDER BY b.${sortField} ${sortOrder}
-    LIMIT ${sanitizedLimit} OFFSET ${offset};
+    LIMIT $2 OFFSET $3;
   `;
 
     const rawQueryWithoutFilter: string = `
@@ -107,12 +100,12 @@ export class BookService {
         WHERE bc.book_id = b.id
       ) AS "bookCategories"
     FROM book b
-    ORDER BY b.updated_at ASC
-    LIMIT ${sanitizedLimit} OFFSET ${offset}`;
+    ORDER BY b.${sortField} ${sortOrder}
+    LIMIT $1 OFFSET $2`;
 
     const resultBooks: Book[] = await this.bookRepository.query(
       filter !== '' ? rawQueryUsingFilter : rawQueryWithoutFilter,
-      filter !== '' ? [tsquery(filter)] : [],
+      filter !== '' ? [tsquery(filter), limit, offset] : [limit, offset],
     );
 
     const rawCountQueryUsingFilter: string = `
